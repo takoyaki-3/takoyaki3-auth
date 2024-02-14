@@ -113,9 +113,21 @@ const vue = createApp({
             vue.jwt = idToken;
             vue.isSignIn = true;
 
-            if(rValue){
-              console.log(rValue);
-              window.location.href = rValue+'?jwt='+idToken;
+            // 'r'パラメータの値がある場合のみ処理を行う
+            if (rValue) {
+              // URLオブジェクトを使用してリダイレクト先のURLを解析する
+              const redirectUrl = new URL(rValue);
+              
+              // URLSearchParamsオブジェクトを取得して、jwtパラメータがあれば削除する
+              const searchParams = redirectUrl.searchParams;
+              searchParams.delete('jwt'); // 既存のjwtパラメータを削除
+              
+              // 新しいjwtパラメータを追加
+              searchParams.set('jwt', idToken);
+              
+              // searchParamsは自動的に更新されるので、URLを組み立て直す必要はない
+              // リダイレクトを実行
+              window.location.href = redirectUrl.toString();
             }
           }).catch(function(error) {
             // Handle error
