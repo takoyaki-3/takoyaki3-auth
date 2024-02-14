@@ -98,6 +98,11 @@ const vue = createApp({
       loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
 
       firebase.auth().onAuthStateChanged(user => {
+        // 現在のURLからクエリパラメータを取得する
+        const queryParams = new URLSearchParams(window.location.search);
+        // 'r'パラメータの値を取得する
+        const rValue = queryParams.get('r');
+
         if (user) {
           firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
             // Send token to your backend via HTTPS
@@ -107,6 +112,11 @@ const vue = createApp({
             vue.text = `ようこそ、${user.email}さん！`;
             vue.jwt = idToken;
             vue.isSignIn = true;
+
+            if(rValue){
+              console.log(rValue);
+              window.location.href = rValue+'?jwt='+idToken;
+            }
           }).catch(function(error) {
             // Handle error
           });
@@ -121,7 +131,7 @@ const vue = createApp({
               firebase.auth.EmailAuthProvider.PROVIDER_ID,
               firebase.auth.GoogleAuthProvider.PROVIDER_ID,
             ],
-            signInSuccessUrl: './',
+            signInSuccessUrl: './?r='+rValue,
           };
   
           let ui = new firebaseui.auth.AuthUI(firebase.auth());
