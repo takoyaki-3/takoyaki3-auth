@@ -30,16 +30,31 @@ const isJwtExpired = (decodedToken) => {
   return decodedToken.exp < currentTime;
 };
 
+// Saves JWT to Local Storage
+const saveJwtToLocalStorage = (jwt) => {
+  window.localStorage.setItem('authIdToken', jwt);
+};
+
+// Removes JWT from URL Query Parameters
+const removeJwtFromUrl = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('jwt');
+  window.history.replaceState({}, document.title, url.toString());
+};
+
 // Initializes authentication process
 const initializeAuth = () => {
   const queryParams = new URLSearchParams(window.location.search);
   authIdToken = queryParams.get('jwt');
 
   if (!authIdToken) {
-    redirectToLoginPage();
-    return; // Stop execution if no token is found
+    // Check if JWT exists in Local Storage
+    authIdToken = window.localStorage.getItem('authIdToken');
+    if (!storedJwt) {
+      redirectToLoginPage();
+      return; // Stop execution if no token is found
+    }
   }
-
   const decodedToken = decodeJwt(authIdToken);
   if (!decodedToken || isJwtExpired(decodedToken)) {
     console.error('Authentication token is invalid or has expired.');
@@ -48,7 +63,13 @@ const initializeAuth = () => {
   }
 
   loggedInUser = { email: decodedToken.email }; // Use email as user identifier
-  // Continue with processes that use the logged-in user's information
+
+  // Save JWT to Local Storage
+  saveJwtToLocalStorage(authIdToken);
+  removeJwtFromUrl();
+
+  // Proceed with user logged-in state
+  console.log('User is authenticated');
 };
 
 initializeAuth();
