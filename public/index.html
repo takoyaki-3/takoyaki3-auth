@@ -118,8 +118,10 @@ const vue = createApp({
               // URLオブジェクトを使用してリダイレクト先のURLを解析する
               const redirectUrl = new URL(rValue);
 
-              // check redirectUrl domain is *.takoyaki3.com
-              if (!redirectUrl.hostname.endsWith('takoyaki3.com')) {
+              // check redirectUrl domain
+              const allowedDomains = ['takoyaki3.com', 'takoyaki-3.github.io', 'localhost', '127.0.0.1'];
+              const isAllowedDomain = allowedDomains.some(domain => redirectUrl.hostname.endsWith(domain));
+              if (!isAllowedDomain) {
                 console.error('Invalid redirect Domain', redirectUrl.hostname);
                 return;
               }
