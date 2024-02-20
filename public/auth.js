@@ -1,34 +1,11 @@
+// Global variables to store auth token and logged-in user information
 let authIdToken = null;
 let loggedInUser = null;
 
-// Initializes authentication
-const initializeAuth = () => {
-  const queryParams = new URLSearchParams(window.location.search);
-  authIdToken = queryParams.get('jwt');
-
-  if (!authIdToken) {
-    redirectToLoginPage();
-  } else {
-    const decodedToken = decodeJwt(authIdToken);
-    if (decodedToken) {
-      const currentTime = Math.floor(Date.now() / 1000); // Get current time as Unix timestamp
-      if (decodedToken.exp < currentTime) {
-        // If JWT has expired
-        console.error('Authentication token has expired.');
-        redirectToLoginPage(); // Redirect to login page
-        return; // Stop further execution
-      }
-
-      loggedInUser = {
-        email: decodedToken.email, // Use email as user identifier
-      };
-      // Continue with processes that use the logged-in user's information
-    } else {
-      // In case of decode failure or invalid token
-      console.error('Failed to decode JWT.');
-      redirectToLoginPage(); // Redirect to login page
-    }
-  }
+// Redirects to the login page
+const redirectToLoginPage = () => {
+  const loginPageUrl = 'https://takoyaki3-auth.web.app';
+  window.location.href = `${loginPageUrl}?r=${encodeURIComponent(window.location.href)}`;
 };
 
 // Decodes JWT
@@ -36,9 +13,9 @@ const decodeJwt = (token) => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map((c) => 
+      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join(''));
 
     return JSON.parse(jsonPayload);
   } catch (e) {
@@ -47,9 +24,31 @@ const decodeJwt = (token) => {
   }
 };
 
-// Redirects to the login page
-const redirectToLoginPage = () => {
-  window.location.href = 'https://takoyaki3-auth.web.app?r=' + window.location.href;
+// Checks if the JWT is expired
+const isJwtExpired = (decodedToken) => {
+  const currentTime = Math.floor(Date.now() / 1000); // Get current time as Unix timestamp
+  return decodedToken.exp < currentTime;
+};
+
+// Initializes authentication process
+const initializeAuth = () => {
+  const queryParams = new URLSearchParams(window.location.search);
+  authIdToken = queryParams.get('jwt');
+
+  if (!authIdToken) {
+    redirectToLoginPage();
+    return; // Stop execution if no token is found
+  }
+
+  const decodedToken = decodeJwt(authIdToken);
+  if (!decodedToken || isJwtExpired(decodedToken)) {
+    console.error('Authentication token is invalid or has expired.');
+    redirectToLoginPage();
+    return; // Stop execution if token is invalid or expired
+  }
+
+  loggedInUser = { email: decodedToken.email }; // Use email as user identifier
+  // Continue with processes that use the logged-in user's information
 };
 
 initializeAuth();
