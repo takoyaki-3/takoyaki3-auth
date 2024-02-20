@@ -117,6 +117,12 @@ const vue = createApp({
             if (rValue) {
               // URLオブジェクトを使用してリダイレクト先のURLを解析する
               const redirectUrl = new URL(rValue);
+
+              // check redirectUrl domain is *.takoyaki3.com
+              if (!redirectUrl.hostname.endsWith('takoyaki3.com')) {
+                console.error('Invalid redirect Domain', redirectUrl.hostname);
+                return;
+              }
               
               // URLSearchParamsオブジェクトを取得して、jwtパラメータがあれば削除する
               const searchParams = redirectUrl.searchParams;
