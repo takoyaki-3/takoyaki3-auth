@@ -50,7 +50,7 @@ const initializeAuth = () => {
   if (!authIdToken) {
     // Check if JWT exists in Local Storage
     authIdToken = window.localStorage.getItem('authIdToken');
-    if (!storedJwt) {
+    if (!authIdToken) {
       redirectToLoginPage();
       return; // Stop execution if no token is found
     }
