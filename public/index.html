@@ -23,7 +23,6 @@
       initialize the SDK after all desired features are loaded, set useEmulator to false
       to avoid connecting the SDK to running emulators.
     -->
-    <script  src="/__/firebase/init.js?useEmulator=true"></script>
 
     <style media="screen">
       body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
@@ -81,6 +80,18 @@ const vue = createApp({
     // firebase.performance(); // call to activate
     //
     // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6ryhdvSKRnqDOWUQj5mjqstSnFGQuOE0",
+      authDomain: "takoyaki3-auth.web.app",
+      projectId: "takoyaki3-auth",
+      storageBucket: "takoyaki3-auth.appspot.com",
+      messagingSenderId: "1035381562180",
+      appId: "1:1035381562180:web:faf0cff68429ea0277d511",
+      measurementId: "G-VMHG0XJM45"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const analytics = firebase.analytics(app);
 
     try {
       let app = firebase.app();
