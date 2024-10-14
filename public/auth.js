@@ -1,5 +1,6 @@
 // Global variables to store auth token and logged-in user information
 let loggedInUser = null;
+let authIdToken = null;
 
 // Redirects to the login page
 const redirectToLoginPage = () => {
@@ -56,7 +57,7 @@ const removeJwtFromUrl = () => {
 // Initializes authentication process
 const initializeAuth = () => {
   const queryParams = new URLSearchParams(window.location.search);
-  let authIdToken = queryParams.get('jwt');
+  authIdToken = queryParams.get('jwt');
 
   if (!authIdToken) {
     // Check if JWT exists in HttpOnly Cookie
