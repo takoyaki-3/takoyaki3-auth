@@ -5,24 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Welcome to Firebase Hosting</title>
 
-    <!-- update the version number as needed -->
-    <script  src="/__/firebase/9.23.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script  src="/__/firebase/9.23.0/firebase-auth-compat.js"></script>
-    <!-- <script  src="/__/firebase/9.23.0/firebase-database-compat.js"></script> -->
-    <!-- <script  src="/__/firebase/9.23.0/firebase-firestore-compat.js"></script> -->
-    <!-- <script  src="/__/firebase/9.23.0/firebase-functions-compat.js"></script> -->
-    <!-- <script  src="/__/firebase/9.23.0/firebase-messaging-compat.js"></script> -->
-    <!-- <script  src="/__/firebase/9.23.0/firebase-storage-compat.js"></script> -->
-    <script  src="/__/firebase/9.23.0/firebase-analytics-compat.js"></script>
-    <!-- <script  src="/__/firebase/9.23.0/firebase-remote-config-compat.js"></script> -->
-    <!-- <script  src="/__/firebase/9.23.0/firebase-performance-compat.js"></script> -->
+    <!-- Firebase SDKs -->
+    <script src="/__/firebase/9.23.0/firebase-app-compat.js"></script>
+    <script src="/__/firebase/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js"></script>
     <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
 
     <style media="screen">
       body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
@@ -54,7 +41,7 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-const { createApp, ref } = Vue
+const { createApp } = Vue
 const vue = createApp({
   data(){
     return {
@@ -66,20 +53,6 @@ const vue = createApp({
   },
   mounted(){
     const loadEl = document.querySelector('#load');
-    // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-    // // The Firebase SDK is initialized and available here!
-    //
-    // firebase.auth().onAuthStateChanged(user => { });
-    // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-    // firebase.firestore().doc('/foo/bar').get().then(() => { });
-    // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-    // firebase.messaging().requestPermission().then(() => { });
-    // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-    // firebase.analytics(); // call to activate
-    // firebase.analytics().logEvent('tutorial_completed');
-    // firebase.performance(); // call to activate
-    //
-    // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
 
     const firebaseConfig = {
       apiKey: "AIzaSyB6ryhdvSKRnqDOWUQj5mjqstSnFGQuOE0",
@@ -91,65 +64,36 @@ const vue = createApp({
       measurementId: "G-VMHG0XJM45"
     };
     const app = firebase.initializeApp(firebaseConfig);
-    const analytics = firebase.analytics(app);
 
     try {
-      let app = firebase.app();
-      let features = [
-        'auth', 
-        'database', 
-        'firestore',
-        'functions',
-        'messaging', 
-        'storage', 
-        'analytics', 
-        'remoteConfig',
-        'performance',
-      ].filter(feature => typeof app[feature] === 'function');
-      loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-
       firebase.auth().onAuthStateChanged(user => {
-        // 現在のURLからクエリパラメータを取得する
         const queryParams = new URLSearchParams(window.location.search);
-        // 'r'パラメータの値を取得する
         const rValue = queryParams.get('r');
 
         if (user) {
           firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
-            // Send token to your backend via HTTPS
-            // ...
-            // User is signed in
             vue.status = 'サインイン済み';
             vue.text = `ようこそ、${user.email}さん！`;
             vue.jwt = idToken;
             vue.isSignIn = true;
 
-            // 'r'パラメータの値がある場合のみ処理を行う
+            // Handle redirection with JWT
             if (rValue) {
-              // URLオブジェクトを使用してリダイレクト先のURLを解析する
               const redirectUrl = new URL(rValue);
-
-              // check redirectUrl domain
               const allowedDomains = ['takoyaki3.com', 'takoyaki-3.github.io', 'localhost', '127.0.0.1'];
               const isAllowedDomain = allowedDomains.some(domain => redirectUrl.hostname.endsWith(domain));
               if (!isAllowedDomain) {
                 console.error('Invalid redirect Domain', redirectUrl.hostname);
                 return;
               }
-              
-              // URLSearchParamsオブジェクトを取得して、jwtパラメータがあれば削除する
+
               const searchParams = redirectUrl.searchParams;
-              searchParams.delete('jwt'); // 既存のjwtパラメータを削除
-              
-              // 新しいjwtパラメータを追加
+              searchParams.delete('jwt');
               searchParams.set('jwt', idToken);
-              
-              // searchParamsは自動的に更新されるので、URLを組み立て直す必要はない
-              // リダイレクトを実行
               window.location.href = redirectUrl.toString();
             }
           }).catch(function(error) {
-            // Handle error
+            console.error(error);
           });
         } else {
           let uiConfig = {
@@ -164,7 +108,7 @@ const vue = createApp({
             ],
             signInSuccessUrl: './?r='+rValue,
           };
-  
+
           let ui = new firebaseui.auth.AuthUI(firebase.auth());
           ui.start('#firebaseui-auth-container', uiConfig);
         }
@@ -177,13 +121,12 @@ const vue = createApp({
   methods:{
     signOut(){
       firebase.auth().signOut().then(() => {
-        // Sign-out successful.
         vue.status = "サインインしてください"
         vue.text = ""
         vue.jwt = ""
         vue.isSignIn = false
       }).catch((error) => {
-        // An error happened.
+        console.error(error);
       });
     }
   }
@@ -191,3 +134,4 @@ const vue = createApp({
     </script>
   </body>
 </html>
+

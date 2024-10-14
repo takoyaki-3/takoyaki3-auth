@@ -1,5 +1,4 @@
 // Global variables to store auth token and logged-in user information
-let authIdToken = null;
 let loggedInUser = null;
 
 // Redirects to the login page
@@ -30,9 +29,21 @@ const isJwtExpired = (decodedToken) => {
   return decodedToken.exp < currentTime;
 };
 
-// Saves JWT to Local Storage
-const saveJwtToLocalStorage = (jwt) => {
-  window.localStorage.setItem('authIdToken', jwt);
+// Gets JWT from HttpOnly cookie
+const getJwtFromCookie = () => {
+  const cookies = document.cookie.split('; ');
+  const jwtCookie = cookies.find(row => row.startsWith('authIdToken='));
+  return jwtCookie ? jwtCookie.split('=')[1] : null;
+};
+
+// Saves JWT to HttpOnly Cookie
+const saveJwtToCookie = (jwt) => {
+  document.cookie = `authIdToken=${jwt}; Secure; HttpOnly; SameSite=Strict; Max-Age=3600`; // Expires in 1 hour
+};
+
+// Clears JWT Cookie on logout
+const clearJwtCookie = () => {
+  document.cookie = "authIdToken=; Max-Age=0; Secure; HttpOnly; SameSite=Strict;";
 };
 
 // Removes JWT from URL Query Parameters
@@ -45,16 +56,17 @@ const removeJwtFromUrl = () => {
 // Initializes authentication process
 const initializeAuth = () => {
   const queryParams = new URLSearchParams(window.location.search);
-  authIdToken = queryParams.get('jwt');
+  let authIdToken = queryParams.get('jwt');
 
   if (!authIdToken) {
-    // Check if JWT exists in Local Storage
-    authIdToken = window.localStorage.getItem('authIdToken');
+    // Check if JWT exists in HttpOnly Cookie
+    authIdToken = getJwtFromCookie();
     if (!authIdToken) {
       redirectToLoginPage();
       return; // Stop execution if no token is found
     }
   }
+
   const decodedToken = decodeJwt(authIdToken);
   if (!decodedToken || isJwtExpired(decodedToken)) {
     console.error('Authentication token is invalid or has expired.');
@@ -64,12 +76,24 @@ const initializeAuth = () => {
 
   loggedInUser = { email: decodedToken.email }; // Use email as user identifier
 
-  // Save JWT to Local Storage
-  saveJwtToLocalStorage(authIdToken);
+  // Save JWT to HttpOnly Cookie
+  saveJwtToCookie(authIdToken);
   removeJwtFromUrl();
 
   // Proceed with user logged-in state
   console.log('User is authenticated');
 };
 
+// Logout function
+const signOut = () => {
+  firebase.auth().signOut().then(() => {
+    clearJwtCookie(); // Clear JWT from Cookie
+    console.log('User signed out successfully');
+    redirectToLoginPage(); // Redirect to login page after logout
+  }).catch((error) => {
+    console.error('Error during sign-out:', error);
+  });
+};
+
 initializeAuth();
+
