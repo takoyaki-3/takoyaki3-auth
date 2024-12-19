@@ -80,7 +80,7 @@ const vue = createApp({
             // Handle redirection with JWT
             if (rValue) {
               const redirectUrl = new URL(rValue);
-              const allowedDomains = ['takoyaki3.com', 'takoyaki-3.github.io', 'localhost', '127.0.0.1'];
+              const allowedDomains = ['takoyaki3.com', 'takoyaki-3.github.io', 'localhost', '127.0.0.1', 'window-grapher.com'];
               const isAllowedDomain = allowedDomains.some(domain => redirectUrl.hostname.endsWith(domain));
               if (!isAllowedDomain) {
                 console.error('Invalid redirect Domain', redirectUrl.hostname);
@@ -134,4 +134,3 @@ const vue = createApp({
     </script>
   </body>
 </html>
-
