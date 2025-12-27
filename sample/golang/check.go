@@ -13,21 +13,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type CustomClaims struct {
 	Name     string `json:"name"`
 	Picture  string `json:"picture"`
-	Iss      string `json:"iss"`
-	Aud      string `json:"aud"`
 	AuthTime int64  `json:"auth_time"`
 	UserId   string `json:"user_id"`
-	Sub      string `json:"sub"`
-	Iat      int64  `json:"iat"`
-	Exp      int64  `json:"exp"`
 	Email    string `json:"email"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func main() {
@@ -58,7 +53,7 @@ func checkFirebaseJWT(tokenString string) (CustomClaims, error) {
 	}
 
 	// JWTのヘッダを解析し署名に用いられている鍵を取得
-	parts := strings.Split(tokenString, ".")
+	parts := strings.SplitN(tokenString, ".", 3)
 	if len(parts) < 2 {
 		return CustomClaims{}, errors.New("invalid token format")
 	}
@@ -103,14 +98,14 @@ func checkFirebaseJWT(tokenString string) (CustomClaims, error) {
 	// 署名を検証
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return rsaPublicKey, nil
-	})
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Alg()}))
 
 	if err != nil {
 		return CustomClaims{}, fmt.Errorf("error while parsing token: %w", err)
 	}
 
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-		if time.Unix(claims.Exp, 0).Before(time.Now()) {
+		if claims.ExpiresAt != nil && claims.ExpiresAt.Time.Before(time.Now()) {
 			return CustomClaims{}, errors.New("token is valid but token is expired")
 		}
 		return *claims, nil
